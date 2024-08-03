@@ -17,10 +17,10 @@ const SessionHistory = () => {
       setLoading(true);
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/sessions`);
       setSessions(response.data);
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching sessions:', error);
       setError('Failed to fetch session history. Please try again later.');
+    } finally {
       setLoading(false);
     }
   };

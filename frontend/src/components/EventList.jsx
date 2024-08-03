@@ -3,23 +3,30 @@ import axios from 'axios';
 import { FaCalendarAlt, FaMapMarkerAlt, FaCloudSun, FaTrashAlt, FaInfoCircle, FaEdit } from 'react-icons/fa';
 import { WiHumidity, WiStrongWind } from 'react-icons/wi';
 import { TiThermometer } from 'react-icons/ti';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import UpdateEventModal from './UpdateEventModal';
 
 const EventList = ({ events, onEventDeleted, onEventUpdated }) => {
   const [weatherData, setWeatherData] = useState({});
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [loadingWeather, setLoadingWeather] = useState({});
+  const [deletingEvent, setDeletingEvent] = useState({});
 
   const handleDelete = async (id) => {
+    setDeletingEvent(prev => ({ ...prev, [id]: true }));
     try {
       await axios.delete(`${import.meta.env.VITE_API_URL}/api/events/${id}`);
       onEventDeleted(id);
     } catch (error) {
       console.error('Error deleting event:', error);
+    } finally {
+      setDeletingEvent(prev => ({ ...prev, [id]: false }));
     }
   };
 
   const checkWeather = async (id, location) => {
+    setLoadingWeather(prev => ({ ...prev, [id]: true }));
     try {
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/weather/${location}`);
       setWeatherData(prevState => ({
@@ -28,6 +35,8 @@ const EventList = ({ events, onEventDeleted, onEventUpdated }) => {
       }));
     } catch (error) {
       console.error('Error fetching weather:', error);
+    } finally {
+      setLoadingWeather(prev => ({ ...prev, [id]: false }));
     }
   };
 
@@ -104,9 +113,14 @@ const EventList = ({ events, onEventDeleted, onEventUpdated }) => {
               <div className="px-4 py-3 bg-gray-900 text-right sm:px-6">
                 <button
                   onClick={() => checkWeather(event._id, event.location)}
-                  className="mr-2 inline-flex items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-300"
+                  disabled={loadingWeather[event._id]}
+                  className="mr-2 inline-flex items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <FaCloudSun className="mr-2" />
+                  {loadingWeather[event._id] ? (
+                    <AiOutlineLoading3Quarters className="animate-spin mr-2" />
+                  ) : (
+                    <FaCloudSun className="mr-2" />
+                  )}
                   Check Weather
                 </button>
                 <button
@@ -118,9 +132,14 @@ const EventList = ({ events, onEventDeleted, onEventUpdated }) => {
                 </button>
                 <button
                   onClick={() => handleDelete(event._id)}
-                  className="inline-flex items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-300"
+                  disabled={deletingEvent[event._id]}
+                  className="inline-flex items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <FaTrashAlt className="mr-2" />
+                  {deletingEvent[event._id] ? (
+                    <AiOutlineLoading3Quarters className="animate-spin mr-2" />
+                  ) : (
+                    <FaTrashAlt className="mr-2" />
+                  )}
                   Delete
                 </button>
               </div>

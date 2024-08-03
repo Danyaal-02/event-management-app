@@ -4,7 +4,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { FaCalendarAlt, FaMapMarkerAlt, FaCloudSun, FaPencilAlt } from 'react-icons/fa';
 import { BsFillPersonFill } from 'react-icons/bs';
-
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 const EventForm = ({ onEventCreated }) => {
   const [name, setName] = useState('');
@@ -13,9 +13,12 @@ const EventForm = ({ onEventCreated }) => {
   const [description, setDescription] = useState('');
   const [weather, setWeather] = useState(null);
   const [weatherError, setWeatherError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCheckingWeather, setIsCheckingWeather] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/events`, {
         name,
@@ -32,10 +35,13 @@ const EventForm = ({ onEventCreated }) => {
       setWeatherError(null);
     } catch (error) {
       console.error('Error creating event:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const checkWeather = async () => {
+    setIsCheckingWeather(true);
     try {
       setWeatherError(null);
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/weather/${location}`);
@@ -48,6 +54,8 @@ const EventForm = ({ onEventCreated }) => {
         setWeatherError('An error occurred while fetching weather data. Please try again later.');
       }
       setWeather(null);
+    } finally {
+      setIsCheckingWeather(false);
     }
   };
 
@@ -104,9 +112,14 @@ const EventForm = ({ onEventCreated }) => {
           <button
             type="button"
             onClick={checkWeather}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-r-md shadow-sm text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-300"
+            disabled={isCheckingWeather}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-r-md shadow-sm text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <FaCloudSun className="mr-2" />
+            {isCheckingWeather ? (
+              <AiOutlineLoading3Quarters className="animate-spin mr-2" />
+            ) : (
+              <FaCloudSun className="mr-2" />
+            )}
             Check Weather
           </button>
         </div>
@@ -144,9 +157,14 @@ const EventForm = ({ onEventCreated }) => {
       </div>
       <button
         type="submit"
-        className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-300 transform hover:scale-105"
+        disabled={isSubmitting}
+        className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        <FaCalendarAlt className="mr-2" />
+        {isSubmitting ? (
+          <AiOutlineLoading3Quarters className="animate-spin mr-2" />
+        ) : (
+          <FaCalendarAlt className="mr-2" />
+        )}
         Create Event
       </button>
     </form>

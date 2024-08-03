@@ -4,15 +4,18 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { FaCalendarAlt, FaMapMarkerAlt, FaPencilAlt, FaTimes } from 'react-icons/fa';
 import { BsFillPersonFill } from 'react-icons/bs';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 const UpdateEventModal = ({ event, onClose, onEventUpdated }) => {
     const [name, setName] = useState(event.name);
     const [date, setDate] = useState(new Date(event.date));
     const [location, setLocation] = useState(event.location);
     const [description, setDescription] = useState(event.description);
+    const [isLoading, setIsLoading] = useState(false);
   
     const handleSubmit = async (e) => {
       e.preventDefault();
+      setIsLoading(true);
       try {
         const response = await axios.put(`${import.meta.env.VITE_API_URL}/api/events/${event._id}`, {
           name,
@@ -24,6 +27,8 @@ const UpdateEventModal = ({ event, onClose, onEventUpdated }) => {
         onClose();
       } catch (error) {
         console.error('Error updating event:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
   
@@ -92,8 +97,14 @@ const UpdateEventModal = ({ event, onClose, onEventUpdated }) => {
             </div>
             <button
               type="submit"
-              className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-300"
+              disabled={isLoading}
+              className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
+              {isLoading ? (
+                <AiOutlineLoading3Quarters className="animate-spin mr-2" />
+              ) : (
+                <FaPencilAlt className="mr-2" />
+              )}
               Update Event
             </button>
           </form>

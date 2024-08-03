@@ -5,6 +5,8 @@ import EventList from './components/EventList';
 import EventForm from './components/EventForm';
 import Register from './components/Register';
 import SessionHistory from './components/SessionHistory';
+import { FaSignOutAlt } from 'react-icons/fa';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 axios.interceptors.request.use(
   (config) => {
@@ -24,6 +26,7 @@ function App() {
   const [events, setEvents] = useState([]);
   const [isRegistering, setIsRegistering] = useState(false);
   const [showSessionHistory, setShowSessionHistory] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -52,6 +55,7 @@ function App() {
   };
 
   const handleLogout = async () => {
+    setIsLoggingOut(true);
     try {
       const sessionId = localStorage.getItem('sessionId');
       await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`, { sessionId });
@@ -62,6 +66,8 @@ function App() {
       setShowSessionHistory(false);
     } catch (error) {
       console.error('Error logging out:', error);
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
@@ -131,8 +137,14 @@ function App() {
                       </button>
                       <button 
                         onClick={handleLogout} 
-                        className="w-full sm:w-auto bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold py-2 px-6 rounded-full transition duration-300"
+                        disabled={isLoggingOut}
+                        className="w-full sm:w-auto bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold py-2 px-6 rounded-full transition duration-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                       >
+                        {isLoggingOut ? (
+                          <AiOutlineLoading3Quarters className="animate-spin mr-2" />
+                        ) : (
+                          <FaSignOutAlt className="mr-2" />
+                        )}
                         Logout
                       </button>
                     </div>
