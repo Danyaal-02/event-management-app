@@ -125,6 +125,6 @@ Please note that these are shared credentials and should only be used for demons
 
 ## Links
 
-- [Backend Deployment](link-to-render-deployment)
-- [Frontend Deployment](link-to-netlify-deployment)
+- [Backend Deployment](https://todo-list-app-bxqn.onrender.com)
+- [Frontend Deployment](https://master--event-management-app-02.netlify.app/)
 ```
