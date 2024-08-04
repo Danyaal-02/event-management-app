@@ -44,7 +44,6 @@ function App() {
     const token = localStorage.getItem('token');
     if (!token) {
       setIsLoggedIn(false);
-      // Clear any user-specific data
       setEvents([]);
       setShowSessionHistory(false);
     } else {
@@ -65,7 +64,7 @@ function App() {
       setEvents(response.data);
     } catch (error) {
       console.error('Error fetching events:', error);
-      checkAuth(); // Check auth status after failed API call
+      checkAuth();
     }
   };
 
