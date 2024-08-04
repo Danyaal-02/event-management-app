@@ -21,6 +21,18 @@ axios.interceptors.request.use(
   }
 );
 
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('sessionId');
+      window.location.reload();
+    }
+    return Promise.reject(error);
+  }
+);
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [events, setEvents] = useState([]);
@@ -28,13 +40,24 @@ function App() {
   const [showSessionHistory, setShowSessionHistory] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  useEffect(() => {
+  const checkAuth = () => {
     const token = localStorage.getItem('token');
-    if (token) {
+    if (!token) {
+      setIsLoggedIn(false);
+      // Clear any user-specific data
+      setEvents([]);
+      setShowSessionHistory(false);
+    } else {
       setIsLoggedIn(true);
+    }
+  };
+
+  useEffect(() => {
+    checkAuth();
+    if (isLoggedIn) {
       fetchEvents();
     }
-  }, []);
+  }, [isLoggedIn]);
 
   const fetchEvents = async () => {
     try {
@@ -42,6 +65,7 @@ function App() {
       setEvents(response.data);
     } catch (error) {
       console.error('Error fetching events:', error);
+      checkAuth(); // Check auth status after failed API call
     }
   };
 
@@ -98,7 +122,7 @@ function App() {
                 isRegistering ? (
                   <>
                     <h2 className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 mb-8">Create an Account</h2>
-                    <Register onRegister={handleRegister} />
+                    <Register onRegister={handleRegister} onRegisterComplete={() => setIsRegistering(false)} />
                     <p className="mt-8 text-center text-gray-400">
                       Already have an account?{' '}
                       <button
